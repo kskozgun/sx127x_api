@@ -3,8 +3,12 @@
 #endif
 
 #ifndef F_CPU 
-#define F_CPU 1E6UL
+#define F_CPU 16000000UL
 #endif 
+
+#define FOSC 16000000 // Uart Clock Speed
+#define BAUD 9600
+#define MYUBRR FOSC/16/BAUD-1 
 
 #include <stdint.h>
 #include <avr/io.h>
@@ -12,6 +16,7 @@
 
 #include "lora_api.h"
 #include "spi_comm.h"
+#include "uart_api.h"
 #include <string.h>
 
 /* Reset pin = 9 - PB1
@@ -22,19 +27,19 @@ int main()
     int ret;
     enum sx127x_err ret_sx127x;
     sx127x_dev dev;
-    unsigned char *tx_data = "Hello";
+    unsigned char *tx_data = "Here";
     int i;
     /* Function assignments */
     dev.spi_read = spi_read_hl;
     dev.spi_write = spi_write_hl;
-    dev.delay_ms =  _delay_ms;
+    //dev.delay_ms =  _delay_ms;
 
     /* Reset the module */
     DDRB = 1 << PORT1;
     PORTB |= 1 <<  PORT1;
-    dev.delay_ms(15);
+    _delay_ms(15);
     PORTB &=~ (1 << PORT1);
-    dev.delay_ms(50);
+    _delay_ms(50);
     PORTB |= (1 << PORT1);
 
     /* DIO0 pin */
@@ -44,9 +49,13 @@ int main()
     /* SPI Init */
     spi_master_init();
 
+    /* UART INIT */
+    uart_init(MYUBRR);
+
     /* LoRa Init */
     ret_sx127x = sx127x_lora_init(&dev);
     if(ret_sx127x < 0) {
+        uart_transmit(tx_data, 4);
         return ret_sx127x;
     }
 
@@ -58,8 +67,9 @@ int main()
             return ret_sx127x;
         }
         for(i = 0; i < 50 ; i++) {
-            dev.delay_ms(10);
+            _delay_ms(10);
         }
+        
     }
     return 0;
 }

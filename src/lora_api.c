@@ -191,7 +191,7 @@ enum sx127x_err sx127x_lora_tx_data(sx127x_dev *dev, uint8_t *tx_data, uint8_t l
 
     /* Write data in FIFO */
     for(i = 0; i < len; i++) {
-        ret = dev->spi_write(SX127X_REG_FIFO, tx_data[i], 1);
+        ret = dev->spi_write(SX127X_REG_FIFO, &tx_data[i], 1);
         if (ret < 0) {
             return ret;
         }
@@ -221,7 +221,7 @@ enum sx127x_err sx127x_lora_tx_data(sx127x_dev *dev, uint8_t *tx_data, uint8_t l
         if (ret) {
             return sx127x_SPI_Error;
         }
-        dev->delay_ms(15);
+        //dev->delay_ms(15);
     } while(!(txdone_mask & 0x08));
 
     /* Clear interrupt */
