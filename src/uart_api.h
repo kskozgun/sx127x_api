@@ -11,7 +11,9 @@
 
 void uart_init(int baudrate);
 
-void uart_transmit(unsigned char *data, uint8_t size);
+void uart_transmit(unsigned char data);
+
+void uart_transmit_hl(unsigned char *data, uint8_t size);
 
 unsigned char uart_receive();
 

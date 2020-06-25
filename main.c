@@ -19,6 +19,9 @@
 #include "uart_api.h"
 #include <string.h>
 
+
+unsigned char *tx_data = "Here";
+
 /* Reset pin = 9 - PB1
    DIO pin = 2 - PD2*/
 
@@ -27,15 +30,18 @@ int main()
     int ret;
     enum sx127x_err ret_sx127x;
     sx127x_dev dev;
-    unsigned char *tx_data = "Here";
     int i;
     /* Function assignments */
     dev.spi_read = spi_read_hl;
     dev.spi_write = spi_write_hl;
     //dev.delay_ms =  _delay_ms;
+    dev.bw = 125e3; // Default
+    dev.sf = 7; // Default
+    dev.txpow = 17; 
+    dev.freq = 868e6; //European ISM band
 
     /* Reset the module */
-    DDRB = 1 << PORT1;
+    DDRB |= 1 << DDB1;
     PORTB |= 1 <<  PORT1;
     _delay_ms(15);
     PORTB &=~ (1 << PORT1);
@@ -44,18 +50,18 @@ int main()
 
     /* DIO0 pin */
     // Pull down or Pull up ?
-    DDRD = 0 << PORT2;
+    PORTD |= 1 << PORT2;
+    DDRD |= 0 << PORT2;
 
     /* SPI Init */
     spi_master_init();
 
     /* UART INIT */
     uart_init(MYUBRR);
-
+    
     /* LoRa Init */
     ret_sx127x = sx127x_lora_init(&dev);
     if(ret_sx127x < 0) {
-        uart_transmit(tx_data, 4);
         return ret_sx127x;
     }
 
@@ -66,10 +72,9 @@ int main()
         if(ret_sx127x < 0) {
             return ret_sx127x;
         }
-        for(i = 0; i < 50 ; i++) {
+        for(i = 0; i < 150 ; i++) {
             _delay_ms(10);
         }
-        
     }
     return 0;
 }

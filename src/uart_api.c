@@ -11,7 +11,15 @@ void uart_init(int baudrate)
      UCSR0C = (3<<UCSZ00); 
 }
 
-void uart_transmit(unsigned char *data, uint8_t size)
+void uart_transmit(unsigned char data)
+{
+        /* Wait for empty transmit buffer */
+        while (!(UCSR0A & (1<<UDRE0)));
+        /* Put data into buffer, sends the data */
+        UDR0 = data;
+}
+
+void uart_transmit_hl(unsigned char *data, uint8_t size)
 {
     int i;
     for(i = 0; i < size; i++) {
